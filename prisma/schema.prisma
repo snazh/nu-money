@@ -1,0 +1,81 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  name        String?
+  tgId        BigInt?  @unique
+  tgUsername  String?
+  
+  tasks       Task[]           @relation("UserTasks")
+  assignments TaskAssignment[] @relation("Assignee")
+  givenTasks  TaskAssignment[] @relation("Assigner")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([email])
+}
+
+model Task {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+
+  categories  TaskCategory[]
+  
+  statusId    Int
+  status      TaskStatus  @relation(fields: [statusId], references: [id])
+
+  userId      Int
+  user        User         @relation("UserTasks", fields: [userId], references: [id])
+  
+  assignments TaskAssignment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([statusId])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+model TaskStatus {
+  id    Int    @id @default(autoincrement())
+  name  String @unique 
+  tasks Task[] 
+}
+model TaskCategory {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  tasks Task[]
+}
+
+model TaskAssignment {
+  id         Int      @id @default(autoincrement())
+  
+  taskId     Int
+  task       Task     @relation(fields: [taskId], references: [id])
+
+  assignerId Int
+  assigner   User     @relation("Assigner", fields: [assignerId], references: [id])
+
+  assigneeId Int
+  assignee   User     @relation("Assignee", fields: [assigneeId], references: [id])
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([taskId])
+  @@index([assigneeId])
+  @@index([assignerId])
+  @@index([createdAt])
+}
