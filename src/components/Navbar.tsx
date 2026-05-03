@@ -22,12 +22,6 @@ export default function Navbar() {
 
 				<div className="flex items-center gap-6 text-sm font-medium">
 					<Link
-						href="/categories"
-						className="text-slate-600 hover:text-indigo-600 transition"
-					>
-						Categories
-					</Link>
-					<Link
 						href="/cart"
 						className="text-slate-600 hover:text-indigo-600 transition"
 					>

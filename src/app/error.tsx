@@ -17,11 +17,7 @@ export default function ErrorPage({
 
 	return (
 		<div className="flex flex-col items-center">
-			<ErrorState
-				code="500"
-				title="Something went wrong"
-				description="System error. We will fix it later)"
-			/>
+			<ErrorState code="500" title="Something went wrong" />
 
 			<div className="-mt-8 mb-20">
 				<Button variant="secondary" onClick={() => reset()}>

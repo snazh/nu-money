@@ -12,5 +12,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
 	const body = await request.json();
-	return NextResponse.json({ received: body }, { status: 200 });
+	const userId = 1; // until auth
+	const newTask = await TaskService.create({ ...body, userId });
+	return NextResponse.json(newTask, { status: 200 });
 }

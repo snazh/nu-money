@@ -1,7 +1,5 @@
-export interface Category {
-	id: number;
-	name: string;
-}
+import type { Category } from "./category.type";
+
 export interface Status {
 	id: number;
 	name: string;
@@ -11,5 +9,8 @@ export interface Task {
 	title: string;
 	description: string;
 	status: Status;
+	price: number;
+	deadline: Date;
+	createdAt: Date;
 	categories: Category[];
 }

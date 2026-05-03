@@ -1,6 +1,3 @@
--- CreateEnum
-CREATE TYPE "TaskStatus" AS ENUM ('OPEN', 'IN_PROCESS', 'CLOSED');
-
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -19,7 +16,9 @@ CREATE TABLE "Task" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "status" "TaskStatus" NOT NULL DEFAULT 'OPEN',
+    "price" INTEGER NOT NULL DEFAULT 0,
+    "deadline" TIMESTAMP(3),
+    "statusId" INTEGER NOT NULL,
     "userId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -28,11 +27,19 @@ CREATE TABLE "Task" (
 );
 
 -- CreateTable
-CREATE TABLE "Category" (
+CREATE TABLE "TaskStatus" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
 
-    CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "TaskStatus_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TaskCategory" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "TaskCategory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -48,11 +55,11 @@ CREATE TABLE "TaskAssignment" (
 );
 
 -- CreateTable
-CREATE TABLE "_CategoryToTask" (
+CREATE TABLE "_TaskToTaskCategory" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL,
 
-    CONSTRAINT "_CategoryToTask_AB_pkey" PRIMARY KEY ("A","B")
+    CONSTRAINT "_TaskToTaskCategory_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -71,7 +78,7 @@ CREATE INDEX "User_email_idx" ON "User"("email");
 CREATE INDEX "Task_userId_idx" ON "Task"("userId");
 
 -- CreateIndex
-CREATE INDEX "Task_status_idx" ON "Task"("status");
+CREATE INDEX "Task_statusId_idx" ON "Task"("statusId");
 
 -- CreateIndex
 CREATE INDEX "Task_createdAt_idx" ON "Task"("createdAt");
@@ -80,7 +87,10 @@ CREATE INDEX "Task_createdAt_idx" ON "Task"("createdAt");
 CREATE INDEX "Task_updatedAt_idx" ON "Task"("updatedAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
+CREATE UNIQUE INDEX "TaskStatus_name_key" ON "TaskStatus"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TaskCategory_name_key" ON "TaskCategory"("name");
 
 -- CreateIndex
 CREATE INDEX "TaskAssignment_taskId_idx" ON "TaskAssignment"("taskId");
@@ -95,7 +105,10 @@ CREATE INDEX "TaskAssignment_assignerId_idx" ON "TaskAssignment"("assignerId");
 CREATE INDEX "TaskAssignment_createdAt_idx" ON "TaskAssignment"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "_CategoryToTask_B_index" ON "_CategoryToTask"("B");
+CREATE INDEX "_TaskToTaskCategory_B_index" ON "_TaskToTaskCategory"("B");
+
+-- AddForeignKey
+ALTER TABLE "Task" ADD CONSTRAINT "Task_statusId_fkey" FOREIGN KEY ("statusId") REFERENCES "TaskStatus"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -110,7 +123,7 @@ ALTER TABLE "TaskAssignment" ADD CONSTRAINT "TaskAssignment_assignerId_fkey" FOR
 ALTER TABLE "TaskAssignment" ADD CONSTRAINT "TaskAssignment_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_CategoryToTask" ADD CONSTRAINT "_CategoryToTask_A_fkey" FOREIGN KEY ("A") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_TaskToTaskCategory" ADD CONSTRAINT "_TaskToTaskCategory_A_fkey" FOREIGN KEY ("A") REFERENCES "Task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_CategoryToTask" ADD CONSTRAINT "_CategoryToTask_B_fkey" FOREIGN KEY ("B") REFERENCES "Task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_TaskToTaskCategory" ADD CONSTRAINT "_TaskToTaskCategory_B_fkey" FOREIGN KEY ("B") REFERENCES "TaskCategory"("id") ON DELETE CASCADE ON UPDATE CASCADE;

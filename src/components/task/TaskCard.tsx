@@ -1,25 +1,27 @@
 import Link from "next/link";
-import type { Task } from "../lib/types/task.type";
-import Badge from "./ui/Badge";
-import Button from "./ui/Button";
-import Card from "./ui/Card";
+import type { Task } from "../../lib/types/task.type";
+import Badge from "../ui/Badge";
+import Button from "../ui/Button";
+import Card from "../ui/Card";
 
 interface TaskCardProps {
 	task: Task;
 }
 
 export default function TaskCard({ task }: TaskCardProps) {
+	const formattedDate = new Date(task.createdAt).toLocaleDateString("en-GB");
 	return (
 		<Card className="group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full">
 			<div>
 				<div className="flex items-center justify-between mb-4">
-					{/* Используем наш новый Badge для статуса */}
 					<Badge
 						color={task.status.name === "Выполнено" ? "emerald" : "indigo"}
 					>
 						{task.status.name}
 					</Badge>
-					<span className="text-xs font-medium text-slate-400">Сегодня</span>
+					<span className="text-xs font-medium text-slate-400">
+						{String(formattedDate)}
+					</span>
 				</div>
 
 				<div className="mb-6">
@@ -33,7 +35,6 @@ export default function TaskCard({ task }: TaskCardProps) {
 			</div>
 
 			<div className="pt-4 border-t border-slate-100 flex flex-col gap-4">
-				{/* Категории через Badge */}
 				<div className="flex flex-wrap gap-1.5">
 					{task.categories?.length ? (
 						task.categories.map((cat) => (
@@ -50,9 +51,8 @@ export default function TaskCard({ task }: TaskCardProps) {
 
 				<div className="flex items-center justify-between">
 					<span className="text-lg font-black text-slate-900 tracking-tight">
-						$50
+						₸ {task.price}
 					</span>
-					{/* Ссылка обернута в наш Button */}
 					<Link href={`/tasks/${task.id}`}>
 						<Button variant="outline" size="sm">
 							Details

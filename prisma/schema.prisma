@@ -29,6 +29,8 @@ model Task {
   id          Int          @id @default(autoincrement())
   title       String
   description String?
+  price       Int       @default(0)
+  deadline    DateTime?
 
   categories  TaskCategory[]
   

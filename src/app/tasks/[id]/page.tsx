@@ -1,7 +1,8 @@
 "use client";
 import { notFound, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import TaskDetails from "@/src/components/TaskDetails";
+import TaskDetails from "@/src/components/task/TaskDetails";
+import Loading from "@/src/components/ui/Loading";
 import type { Task } from "@/src/lib/types/task.type";
 export default function TaskDetailsPage() {
 	const params = useParams();
@@ -29,13 +30,7 @@ export default function TaskDetailsPage() {
 		if (taskId) fetchData();
 	}, [taskId]);
 	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<div className="animate-pulse text-indigo-600 font-bold">
-					Task is loading...
-				</div>
-			</div>
-		);
+		return <Loading message="Task is loading" />;
 	}
 	if (error || !task) {
 		notFound();

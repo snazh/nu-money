@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma";
-import type { TaskCreate } from "../lib/schemas/task.schema";
+import type { DBTaskCreate } from "../lib/schemas/task.schema";
 
 interface TaskFilter {
 	statuses?: string[] | null;
@@ -8,7 +8,13 @@ interface TaskFilter {
 
 export const TaskService = {
 	async getOne(taskId: number) {
-		return await prisma.task.findUnique({ where: { id: taskId } });
+		return await prisma.task.findUnique({
+			where: { id: taskId },
+			include: {
+				categories: true,
+				status: true,
+			},
+		});
 	},
 	async getAll(filters?: TaskFilter) {
 		return await prisma.task.findMany({
@@ -32,7 +38,7 @@ export const TaskService = {
 			},
 		});
 	},
-	async create(taskData: TaskCreate) {
+	async create(taskData: DBTaskCreate) {
 		const { categoryNames, userId, ...task } = taskData;
 		const newTask = await prisma.task.create({
 			data: {
@@ -52,6 +58,7 @@ export const TaskService = {
 			},
 			include: {
 				categories: true,
+				status: true,
 			},
 		});
 		return newTask;
