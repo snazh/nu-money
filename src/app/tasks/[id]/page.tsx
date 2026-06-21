@@ -1,39 +1,57 @@
-"use client";
-import { notFound, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import TaskDetails from "@/src/components/task/TaskDetails";
-import Loading from "@/src/components/ui/Loading";
-import type { Task } from "@/src/lib/types/task.type";
-export default function TaskDetailsPage() {
-	const params = useParams();
-	const taskId = params.id;
+import { notFound } from "next/navigation";
+import TaskDetails, { type ViewerAction } from "@/components/task/TaskDetails";
+import { getCurrentUser } from "@/lib/auth";
+import { TaskService } from "@/services/task.service";
 
-	const [task, setTask] = useState<Task>();
-	const [error, setError] = useState<boolean>(false);
-	const [isLoading, setIsLoading] = useState(true);
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await fetch(`/api/tasks/${taskId}`);
-				if (!response.ok) {
-					setError(true);
-				}
-				const data = await response.json();
-				setTask(data);
-			} catch (error) {
-				console.error("Failed to fetch task with ID", error);
-				setError(true);
-			} finally {
-				setIsLoading(false);
-			}
+interface TaskDetailsPageProps {
+	params: Promise<{ id: string }>;
+}
+
+export default async function TaskDetailsPage({
+	params,
+}: TaskDetailsPageProps) {
+	const { id } = await params;
+	const taskId = Number(id);
+
+	const [task, currentUser] = await Promise.all([
+		TaskService.getOne(taskId),
+		getCurrentUser(),
+	]);
+
+	if (!task) notFound();
+
+	const isOwner = currentUser?.id === task.user.id;
+	const isOpen = task.status.name === "open";
+
+	let viewerAction: ViewerAction;
+
+	if (isOwner) {
+		const [pendingRequests, approvedAssignment] = await Promise.all([
+			isOpen ? TaskService.getPendingRequests(taskId) : Promise.resolve([]),
+			isOpen ? Promise.resolve(null) : TaskService.getApprovedAssignment(taskId),
+		]);
+		viewerAction = {
+			type: "owner",
+			pendingRequests,
+			contactTarget: approvedAssignment?.assignee ?? null,
 		};
-		if (taskId) fetchData();
-	}, [taskId]);
-	if (isLoading) {
-		return <Loading message="Task is loading" />;
+	} else if (!currentUser) {
+		viewerAction = { type: "signed-out" };
+	} else {
+		const myRequest = await TaskService.getMyRequest(taskId, currentUser.id);
+
+		if (myRequest?.status === "approved") {
+			viewerAction = { type: "approved", contactTarget: task.user };
+		} else if (!isOpen) {
+			viewerAction = { type: "unavailable" };
+		} else if (myRequest?.status === "pending") {
+			viewerAction = { type: "pending" };
+		} else if (myRequest?.status === "rejected") {
+			viewerAction = { type: "rejected" };
+		} else {
+			viewerAction = { type: "can-request" };
+		}
 	}
-	if (error || !task) {
-		notFound();
-	}
-	return <TaskDetails task={task} />;
+
+	return <TaskDetails task={task} viewerAction={viewerAction} />;
 }

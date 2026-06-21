@@ -1,33 +1,13 @@
-"use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import TaskList from "../components/task/TaskList";
-import Button from "../components/ui/Button";
-import Loading from "../components/ui/Loading";
-import type { Task } from "../lib/types/task.type";
+import TaskList from "@/components/task/TaskList";
+import Button from "@/components/ui/Button";
+import { TaskService } from "@/services/task.service";
 
-export default function Home() {
-	const [tasks, setTasks] = useState<Task[]>([]);
-	const [loading, setLoading] = useState<boolean>(true);
+const FEATURED_LIMIT = 4;
 
-	useEffect(() => {
-		const fetchTasks = async () => {
-			try {
-				const response = await fetch("/api/tasks");
-				const result = await response.json();
-				setTasks(result);
-			} catch (error) {
-				console.error("Failed to fetch tasks", error);
-			} finally {
-				setLoading(false);
-			}
-		};
-		fetchTasks();
-	}, []);
-
-	if (loading) {
-		return <Loading message="Finding the best opportunities for you" />;
-	}
+export default async function Home() {
+	const tasks = await TaskService.getAll({ statuses: ["open"] });
+	const featuredTasks = tasks.slice(0, FEATURED_LIMIT);
 
 	return (
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -43,8 +23,13 @@ export default function Home() {
 					university. Earn money by helping others achieve more.
 				</p>
 				<div className="flex justify-center gap-4">
-					<Link href="tasks/create">
+					<Link href="/tasks/create">
 						<Button size="lg">Post a Project</Button>
+					</Link>
+					<Link href="/tasks">
+						<Button size="lg" variant="outline">
+							Browse Tasks
+						</Button>
 					</Link>
 				</div>
 			</header>
@@ -52,12 +37,15 @@ export default function Home() {
 			<section>
 				<div className="flex items-center justify-between mb-8">
 					<h2 className="text-2xl font-bold text-slate-900">Featured Tasks</h2>
-					<span className="text-sm text-slate-400 font-medium">
-						{tasks.length} active listings
-					</span>
+					<Link
+						href="/tasks"
+						className="text-sm font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest"
+					>
+						View all →
+					</Link>
 				</div>
 
-				<TaskList tasks={tasks} />
+				<TaskList tasks={featuredTasks} />
 			</section>
 		</div>
 	);

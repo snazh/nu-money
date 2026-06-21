@@ -1,5 +1,6 @@
+import { getCurrentUser } from "@/lib/auth";
+import { TaskService } from "@/services/task.service";
 import { NextResponse } from "next/server";
-import { TaskService } from "@/src/services/task.service";
 export async function GET(request: Request) {
 	const url = new URL(request.url);
 	const { searchParams } = url;
@@ -11,8 +12,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+	const user = await getCurrentUser();
+	if (!user) {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
 	const body = await request.json();
-	const userId = 1; // until auth
-	const newTask = await TaskService.create({ ...body, userId });
+	const newTask = await TaskService.create({ ...body, userId: user.id });
 	return NextResponse.json(newTask, { status: 200 });
 }

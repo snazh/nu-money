@@ -1,5 +1,5 @@
+import { TaskService } from "@/services/task.service";
 import { NextResponse } from "next/server";
-import { TaskService } from "@/src/services/task.service";
 export async function GET(
 	request: Request,
 	{ params }: { params: Promise<{ id: string }> },

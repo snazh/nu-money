@@ -1,21 +1,62 @@
-"use client";
-import type { Task } from "../../lib/types/task.type";
+import Link from "next/link";
+import type { TaskDetail, TaskOwner } from "../../lib/types/task.type";
+import { getStatusBadgeColor } from "../../lib/utils/status";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
+import { RequestTaskButton } from "./RequestTaskButton";
+import { TaskRequestsPanel } from "./TaskRequestsPanel";
+
+interface PendingRequest {
+	id: number;
+	assignee: { id: number; tgUsername: string | null };
+}
+
+export type ViewerAction =
+	| { type: "owner"; pendingRequests: PendingRequest[]; contactTarget: TaskOwner | null }
+	| { type: "approved"; contactTarget: TaskOwner }
+	| { type: "pending" }
+	| { type: "rejected" }
+	| { type: "can-request" }
+	| { type: "signed-out" }
+	| { type: "unavailable" };
 
 interface TaskDetailsProps {
-	task: Task;
+	task: TaskDetail;
+	viewerAction: ViewerAction;
 }
-export default function TaskDetails({ task }: TaskDetailsProps) {
-	const formattedDeadline = new Date(task.createdAt).toLocaleDateString(
-		"en-GB",
+
+function TelegramContactLink({ target }: { target: TaskOwner }) {
+	if (!target.tgUsername) {
+		return (
+			<p className="text-sm font-semibold text-slate-500">
+				This user has no public Telegram username yet.
+			</p>
+		);
+	}
+	return (
+		<a href={`https://t.me/${target.tgUsername}`} target="_blank" rel="noopener noreferrer">
+			<Button variant="primary" size="lg" className="flex-1 sm:flex-none">
+				Message on Telegram
+			</Button>
+		</a>
 	);
+}
+
+export default function TaskDetails({ task, viewerAction }: TaskDetailsProps) {
+	const formattedDeadline = task.deadline
+		? new Date(task.deadline).toLocaleDateString("en-GB")
+		: "No deadline";
+
 	return (
 		<div className="max-w-5xl mx-auto px-4 py-12">
+			{viewerAction.type === "owner" && viewerAction.pendingRequests.length > 0 && (
+				<TaskRequestsPanel taskId={task.id} requests={viewerAction.pendingRequests} />
+			)}
+
 			<Card className="p-10">
 				<div className="flex items-center gap-3 mb-6">
-					<Badge color={task.status.name === "open" ? "indigo" : "rose"}>
+					<Badge color={getStatusBadgeColor(task.status.name)}>
 						{task.status.name}
 					</Badge>
 					<span className="text-sm text-slate-400 font-medium">
@@ -48,10 +89,58 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
 					</div>
 				</div>
 
-				<div className="flex flex-wrap gap-4">
-					<Button variant="primary" size="lg" className="flex-1 sm:flex-none">
-						Take
-					</Button>
+				<div className="flex flex-wrap items-center gap-4">
+					{viewerAction.type === "owner" && (
+						<>
+							{viewerAction.contactTarget ? (
+								<TelegramContactLink target={viewerAction.contactTarget} />
+							) : (
+								<span className="text-sm font-semibold text-slate-500">
+									{task.status.name === "open"
+										? "Posted by you. Approve a request above to confirm a helper."
+										: "Posted by you."}
+								</span>
+							)}
+						</>
+					)}
+
+					{viewerAction.type === "approved" && (
+						<TelegramContactLink target={viewerAction.contactTarget} />
+					)}
+
+					{viewerAction.type === "pending" && (
+						<span className="text-sm font-semibold text-slate-500">
+							Request sent — waiting for the poster to approve.
+						</span>
+					)}
+
+					{viewerAction.type === "rejected" && (
+						<>
+							<span className="text-sm font-semibold text-slate-500">
+								Your previous request was declined.
+							</span>
+							<RequestTaskButton taskId={task.id} />
+						</>
+					)}
+
+					{viewerAction.type === "can-request" && (
+						<RequestTaskButton taskId={task.id} />
+					)}
+
+					{viewerAction.type === "signed-out" && (
+						<Link href="/auth/login">
+							<Button variant="primary" size="lg" className="flex-1 sm:flex-none">
+								Sign in to Request
+							</Button>
+						</Link>
+					)}
+
+					{viewerAction.type === "unavailable" && (
+						<span className="text-sm font-semibold text-slate-500">
+							This task is no longer open.
+						</span>
+					)}
+
 					<Button variant="outline" size="lg" className="flex-1 sm:flex-none">
 						Save
 					</Button>

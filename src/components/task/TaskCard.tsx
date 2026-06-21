@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Task } from "../../lib/types/task.type";
+import { getStatusBadgeColor } from "../../lib/utils/status";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
@@ -14,9 +15,7 @@ export default function TaskCard({ task }: TaskCardProps) {
 		<Card className="group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full">
 			<div>
 				<div className="flex items-center justify-between mb-4">
-					<Badge
-						color={task.status.name === "Выполнено" ? "emerald" : "indigo"}
-					>
+					<Badge color={getStatusBadgeColor(task.status.name)}>
 						{task.status.name}
 					</Badge>
 					<span className="text-xs font-medium text-slate-400">

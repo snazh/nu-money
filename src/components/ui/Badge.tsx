@@ -1,8 +1,10 @@
 import type React from "react";
 
+export type BadgeColor = "indigo" | "emerald" | "slate" | "amber" | "rose";
+
 interface BadgeProps {
 	children: React.ReactNode;
-	color?: "indigo" | "emerald" | "slate" | "amber" | "rose";
+	color?: BadgeColor;
 }
 
 export default function Badge({ children, color = "slate" }: BadgeProps) {

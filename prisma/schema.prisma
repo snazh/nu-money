@@ -9,8 +9,6 @@ datasource db {
 
 model User {
   id          Int      @id @default(autoincrement())
-  email       String   @unique
-  name        String?
   tgId        BigInt?  @unique
   tgUsername  String?
   
@@ -22,7 +20,7 @@ model User {
   updatedAt   DateTime @updatedAt
 
   @@index([createdAt])
-  @@index([email])
+  @@index([tgUsername])
 }
 
 model Task {
@@ -61,9 +59,16 @@ model TaskCategory {
   tasks Task[]
 }
 
+enum AssignmentStatus {
+  pending
+  approved
+  rejected
+}
+
 model TaskAssignment {
-  id         Int      @id @default(autoincrement())
-  
+  id         Int              @id @default(autoincrement())
+  status     AssignmentStatus @default(pending)
+
   taskId     Int
   task       Task     @relation(fields: [taskId], references: [id])
 

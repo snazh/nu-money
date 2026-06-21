@@ -17,5 +17,15 @@ services:
     ports:
       - "${REDIS_PORT}:6379"
 
+  bot:
+    build: ./bot
+    restart: always
+    environment:
+      - TG_BOT_TOKEN=${TG_BOT_TOKEN}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+
 volumes:
   postgres_data:

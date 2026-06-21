@@ -1,5 +1,5 @@
+import { CategoryService } from "@/services/category.service";
 import { NextResponse } from "next/server";
-import { CategoryService } from "@/src/services/category.service";
 
 export async function GET(request: Request) {
 	const categories = await CategoryService.getAll();

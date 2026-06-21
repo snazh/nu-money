@@ -1,8 +1,6 @@
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
-    "email" TEXT NOT NULL,
-    "name" TEXT,
     "tgId" BIGINT,
     "tgUsername" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -63,16 +61,13 @@ CREATE TABLE "_TaskToTaskCategory" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
 CREATE UNIQUE INDEX "User_tgId_key" ON "User"("tgId");
 
 -- CreateIndex
 CREATE INDEX "User_createdAt_idx" ON "User"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "User_email_idx" ON "User"("email");
+CREATE INDEX "User_tgUsername_idx" ON "User"("tgUsername");
 
 -- CreateIndex
 CREATE INDEX "Task_userId_idx" ON "Task"("userId");

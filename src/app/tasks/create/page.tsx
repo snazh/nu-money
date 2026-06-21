@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { CreateTaskForm } from "@/src/components/task/СreateTask";
+import { CreateTaskForm } from "@/components/task/CreateTaskForm";
+import { CategoryService } from "@/services/category.service";
 
-export default function CreateTaskPage() {
+export default async function CreateTaskPage() {
+	const categories = await CategoryService.getAll();
+
 	return (
 		<div className="max-w-4xl mx-auto px-4 py-12">
 			<div className="mb-10 text-center">
@@ -18,7 +21,7 @@ export default function CreateTaskPage() {
 					Fill out the form below to find the best freelancer for your project.
 				</p>
 			</div>
-			<CreateTaskForm />
+			<CreateTaskForm categories={categories} />
 		</div>
 	);
 }
